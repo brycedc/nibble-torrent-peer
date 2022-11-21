@@ -2,29 +2,24 @@ import threading
 import time
 import requests
 import logging
-import socket
 
 # Creates tracker thread
-def create_tracker_thread(peer_id, port_number, torrent_id, tracker_url, queue):
-    # Finds the current peer's ip address
-    h_name = socket.gethostname()
-    ip_address = socket.gethostbyname(h_name)
-
+def create_client_thread(tracker_queue):
     # Spawn a thread to communicate to the tracker
-    tracker_thread = threading.Thread(
-        target=tracker_task,
-        args=(peer_id, ip_address, port_number, torrent_id, tracker_url, queue),
-        daemon=True
+    client_thread = threading.Thread(
+        target=client_task,
+        args=(tracker_queue,),
+        daemon=True,
     )
-    tracker_thread.start()
+    client_thread.start()
 
 # Sends a request to the torrent tracker every 30 seconds
-def tracker_task(peer_id, ip_address, port_number, torrent_id, tracker_url, queue):
+def client_task(peer_id, port_number, torrent_id, tracker_url, queue):
     while 1:
         # Makes a http request to the tracker
         payload = {
             "peer_id": peer_id,
-            "ip": ip_address,
+            "ip": "192.168.86.63",
             "port": port_number,
             "torrent_id": torrent_id,
         }

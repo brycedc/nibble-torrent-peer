@@ -72,13 +72,8 @@ def main():
     # Creates server thread to upload chunks to clients
     create_server_thread(args.port, json_data["torrent_id"])
 
-    # Recycles task to download chunks from peers
-    while 1:
-        try:
-            1 + 1
-        except KeyboardInterrupt:
-            sys.stderr.write("\nPeer has been closed!\n")
-            break
+    # Creates client thread to download chunks to file
+    
 
 
 if __name__ == "__main__":
