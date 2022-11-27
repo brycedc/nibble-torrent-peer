@@ -5,10 +5,7 @@ import logging
 import socket
 
 # Creates tracker thread
-def create_tracker_thread(peer_id, port_number, torrent_id, tracker_url, queue):
-    # Finds the current peer's ip address
-    h_name = socket.gethostname()
-    ip_address = socket.gethostbyname(h_name)
+def create_tracker_thread(peer_id, ip_address, port_number, torrent_id, tracker_url, queue):
 
     # Spawn a thread to communicate to the tracker
     tracker_thread = threading.Thread(

@@ -14,6 +14,11 @@ def main():
     # Create parser for Command Line
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument(
+        "--host",
+        default=socket.gethostbyname(socket.gethostname()),
+        help="host name of peer, defaults to private ip",
+    )
+    parser.add_argument(
         "-p", "--port", type=int, default=8088, help="set the server port number"
     )
     parser.add_argument("-d", "--dest", help="the folder to download to and seed from.")
@@ -50,6 +55,7 @@ def main():
     peer_id = f"-ECEN426-{args.netid}"
 
     logging.info(" Config:")
+    logging.info(f"\tHost: {args.host}")
     logging.info(f"\tPort: {args.port}")
     logging.info(f"\tFolder: {args.dest}")
     logging.info(f"\tNetID: {args.netid}")
@@ -63,6 +69,7 @@ def main():
     tracker_queue = queue.Queue(maxsize=1)
     create_tracker_thread(
         peer_id=peer_id,
+        ip_address=args.host,
         port_number=args.port,
         torrent_id=json_data["torrent_id"],
         tracker_url=json_data["tracker_url"],
@@ -73,7 +80,6 @@ def main():
     create_server_thread(args.port, json_data["torrent_id"])
 
     # Creates client thread to download chunks to file
-    
 
 
 if __name__ == "__main__":
