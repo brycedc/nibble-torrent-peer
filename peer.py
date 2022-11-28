@@ -5,6 +5,8 @@ import json
 import logging
 import queue
 import socket
+import time
+import threading
 
 from handlers.tracker_thread import create_tracker_thread
 from handlers.server_thread import create_server_thread
@@ -65,6 +67,9 @@ def main():
     with open(f"torrents/{args.torrent_file}", "r") as torrent:
         json_data = json.load(torrent)
 
+    # Creates thread killer event
+    thread_killer = threading.Event() 
+
     # Creates tracker thread and response queue
     tracker_queue = queue.Queue(maxsize=1)
     create_tracker_thread(
@@ -77,9 +82,25 @@ def main():
     )
 
     # Creates server thread to upload chunks to clients
-    create_server_thread(args.port, json_data["torrent_id"])
+    thread_server = create_server_thread(args.port, json_data["torrent_id"], thread_killer)
 
     # Creates client thread to download chunks to file
+
+    # Keeps main task alive until a keyboard interrupts is detected
+    try:
+        while 1:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        # Gracefully closes the peer
+        sys.stderr.write("\nClosing peer...\n")
+        thread_killer.set()
+
+        # Waits for threads to end gracefully
+        thread_server.join()
+        logging.info(" MAIN THREAD: server has been closed...")
+
+    
+        
 
 
 if __name__ == "__main__":

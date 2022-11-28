@@ -7,21 +7,23 @@ from utils.message import Message, MessageType
 global seed_torrent_id
 
 # Creates tracker thread
-def create_server_thread(server_port, torrent_id):
+def create_server_thread(server_port, torrent_id, thread_event):
     # Sets the torrent id
     seed_torrent_id = torrent_id
     # Spawn a thread to communicate to the tracker
-    server_thread = threading.Thread(target=server_task, args=(server_port,))
+    server_thread = threading.Thread(target=server_task, args=(server_port,thread_event))
     server_thread.start()
+    return server_thread
 
 
 # Sever task controls creation of child task to upload file chunks to other peers
-def server_task(server_port):
+def server_task(server_port, thread_event):
 
     # Creates a server socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("", server_port))
     server_socket.listen()
+    server_socket.settimeout(3)
     logging.info(f" SERVER_THREAD: Created server on port {server_port}")
 
     # Loops passing on new connection to upload_task
@@ -31,9 +33,11 @@ def server_task(server_port):
             logging.info(f" SERVER_THREAD: Accepted new upload peer @ {addr[0]}:{addr[1]}")
             upload_peer = threading.Thread(target=upload_task, args=(conn, addr))
             upload_peer.start()
-        except KeyboardInterrupt:
-            logging.info(f" SERVER_THREAD: Closing server socket...")
-            server_socket.close()
+        except socket.timeout:
+            if thread_event.is_set():
+                logging.info(f" SERVER_THREAD: Closing server socket...")
+                server_socket.close()
+                break
 
 
 # Sends the request chunk to the connected peer
