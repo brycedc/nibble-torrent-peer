@@ -23,7 +23,7 @@ def server_task(server_port, thread_event):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("", server_port))
     server_socket.listen()
-    server_socket.settimeout(3)
+    server_socket.settimeout(1)
     logging.info(f" SERVER_THREAD: Created server on port {server_port}")
 
     # Loops passing on new connection to upload_task

@@ -10,6 +10,7 @@ import threading
 
 from handlers.tracker_thread import create_tracker_thread
 from handlers.server_thread import create_server_thread
+from handlers.client_thread import create_client_thread
 
 
 def main():
@@ -67,11 +68,14 @@ def main():
     with open(f"torrents/{args.torrent_file}", "r") as torrent:
         json_data = json.load(torrent)
 
+    # Creates a response queue from the tracker
+    tracker_queue = queue.Queue(maxsize=1)
+
+    # *THREADING*
     # Creates thread killer event
     thread_killer = threading.Event()
 
-    # Creates tracker thread and response queue
-    tracker_queue = queue.Queue(maxsize=1)
+    # Creates tracker thread
     tracker_thread = create_tracker_thread(
         peer_id=peer_id,
         ip_address=args.host,
@@ -81,18 +85,23 @@ def main():
         queue=tracker_queue,
         thread_event=thread_killer,
     )
-
     # Creates server thread to upload chunks to clients
     thread_server = create_server_thread(
         args.port, json_data["torrent_id"], thread_killer
     )
-
     # Creates client thread to download chunks to file
+    thread_client = create_client_thread(
+        peer_list_queue=tracker_queue,
+        torrent_id=json_data["torrent_id"],
+        current_peer_id=peer_id,
+        thread_event=thread_killer,
+    )
 
-    # Keeps main task alive until a keyboard interrupts is detected
+    # Keeps main thread alive until a keyboard interrupts is detected
     try:
         while 1:
             time.sleep(1)
+
     except KeyboardInterrupt:
         # Gracefully closes the peer
         sys.stderr.write("\nClosing peer...\n")
@@ -101,6 +110,7 @@ def main():
         # Waits for threads to end gracefully
         tracker_thread.join()
         thread_server.join()
+        # thread_client.join()
 
         sys.stderr.write("Peer closed successfully!\n")
 

@@ -1,41 +1,39 @@
 import threading
-import time
-import requests
-import logging
+import socket
+import queue
 
-# Creates tracker thread
-def create_client_thread(tracker_queue):
+# Creates client thread
+def create_client_thread(peer_list_queue, torrent_id, current_peer_id, thread_event):
     # Spawn a thread to communicate to the tracker
     client_thread = threading.Thread(
         target=client_task,
-        args=(tracker_queue,),
-        daemon=True,
+        args=(peer_list_queue, torrent_id, current_peer_id, thread_event),
     )
     client_thread.start()
+    return client_thread
 
-# Sends a request to the torrent tracker every 30 seconds
-def client_task(peer_id, port_number, torrent_id, tracker_url, queue):
+
+# Client task to control connection to 5 peers
+def client_task(peer_list_queue, torrent_id, current_peer_id, thread_event):
     while 1:
-        # Makes a http request to the tracker
-        payload = {
-            "peer_id": peer_id,
-            "ip": "192.168.86.63",
-            "port": port_number,
-            "torrent_id": torrent_id,
-        }
-        new_response = requests.get(tracker_url, params=payload).json()
-        peer_list = new_response['peers']
+        # Gets the list of peers available
+        peer_list = peer_list_queue.get()
 
-        # Logs the response object
-        logging.info(f" TRACKER_THREAD Tracker Response")
-        logging.info(f" TRACKER_THREAD \tInterval: {new_response['interval']}")
-        logging.info(f" TRACKER_THREAD \tPeer List:")
+        # Loops through each peer and sets up a connection
         for peer in peer_list:
-            logging.info(f" TRACKER_THREAD \t {peer}")
+            # Skips over own peer id
+            if peer[1] == current_peer_id:
+                continue
+            download_thread = threading.Thread(target=download_task, args=(peer[0], peer[1], torrent_id, thread_event))
+            download_thread.start()
 
-        # Adds new response to the tracker queue and clears the old results if any
-        queue.queue.clear()
-        queue.put(peer_list)
-        
-        # Sleeps for the interval time
-        time.sleep(new_response["interval"])
+            
+def download_task(peer_address, peer_id, torrent_id, thread_event):
+    peer_ip, peer_port = peer_address.split(":")
+
+    # Creates connection to peer
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = client_socket.connect((peer_ip, int(peer_port)))
+    print(result)
+
+

@@ -2,7 +2,6 @@ import threading
 import time
 import requests
 import logging
-import socket
 
 # Creates tracker thread
 def create_tracker_thread(
