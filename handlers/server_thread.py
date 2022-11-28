@@ -39,6 +39,8 @@ def server_task(server_port, thread_event):
                 server_socket.close()
                 break
 
+    logging.info(f" SERVER_THREAD: <<<Complete>>>")
+
 
 # Sends the request chunk to the connected peer
 def upload_task(conn, addr):

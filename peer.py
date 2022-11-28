@@ -68,21 +68,24 @@ def main():
         json_data = json.load(torrent)
 
     # Creates thread killer event
-    thread_killer = threading.Event() 
+    thread_killer = threading.Event()
 
     # Creates tracker thread and response queue
     tracker_queue = queue.Queue(maxsize=1)
-    create_tracker_thread(
+    tracker_thread = create_tracker_thread(
         peer_id=peer_id,
         ip_address=args.host,
         port_number=args.port,
         torrent_id=json_data["torrent_id"],
         tracker_url=json_data["tracker_url"],
         queue=tracker_queue,
+        thread_event=thread_killer,
     )
 
     # Creates server thread to upload chunks to clients
-    thread_server = create_server_thread(args.port, json_data["torrent_id"], thread_killer)
+    thread_server = create_server_thread(
+        args.port, json_data["torrent_id"], thread_killer
+    )
 
     # Creates client thread to download chunks to file
 
@@ -96,11 +99,10 @@ def main():
         thread_killer.set()
 
         # Waits for threads to end gracefully
+        tracker_thread.join()
         thread_server.join()
-        logging.info(" MAIN THREAD: server has been closed...")
 
-    
-        
+        sys.stderr.write("Peer closed successfully!\n")
 
 
 if __name__ == "__main__":
