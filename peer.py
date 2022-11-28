@@ -11,6 +11,7 @@ import threading
 from handlers.tracker_thread import create_tracker_thread
 from handlers.server_thread import create_server_thread
 from handlers.client_thread import create_client_thread
+from utils.chunk_manager import ChunkManager
 
 
 def main():
@@ -71,6 +72,16 @@ def main():
     # Creates a response queue from the tracker
     tracker_queue = queue.Queue(maxsize=1)
 
+    # *CHUNK MANAGER*
+    # Creates a chunk manager
+    chunk_manager = ChunkManager(
+        file_name=json_data["file_name"],
+        file_size=json_data["file_size"],
+        piece_size=json_data["piece_size"],
+        pieces=json_data["pieces"],
+        torrent_id=json_data["torrent_id"],
+    )
+
     # *THREADING*
     # Creates thread killer event
     thread_killer = threading.Event()
@@ -87,15 +98,15 @@ def main():
     )
     # Creates server thread to upload chunks to clients
     thread_server = create_server_thread(
-        args.port, json_data["torrent_id"], thread_killer
+        args.port, chunk_manager, thread_killer
     )
     # Creates client thread to download chunks to file
-    thread_client = create_client_thread(
-        peer_list_queue=tracker_queue,
-        torrent_id=json_data["torrent_id"],
-        current_peer_id=peer_id,
-        thread_event=thread_killer,
-    )
+    # thread_client = create_client_thread(
+    #     peer_list_queue=tracker_queue,
+    #     torrent_id=json_data["torrent_id"],
+    #     current_peer_id=peer_id,
+    #     thread_event=thread_killer,
+    # )
 
     # Keeps main thread alive until a keyboard interrupts is detected
     try:

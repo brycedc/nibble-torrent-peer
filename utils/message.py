@@ -23,7 +23,7 @@ class Message:
             return None
 
         version = header[0]
-        type_ = header[1:2]
+        type_ = header[1]
         length = int.from_bytes(header[2:], "big")
         total_data = b""
 
@@ -36,19 +36,6 @@ class Message:
             total_data += data
 
         return cls(MessageType(type_), data=total_data)
-
-    @classmethod
-    async def from_reader(cls, reader):
-        header = await reader.read(4)
-
-        if not header:
-            return None
-
-        type_ = header[0]
-        length = int.from_bytes(header[1:], "big")
-
-        data = await reader.readexactly(length)
-        return cls(MessageType(type_), data)
 
     def to_bytes(self):
         data = self.data or b""
