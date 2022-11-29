@@ -101,12 +101,12 @@ def main():
         args.port, chunk_manager, thread_killer
     )
     # Creates client thread to download chunks to file
-    # thread_client = create_client_thread(
-    #     peer_list_queue=tracker_queue,
-    #     torrent_id=json_data["torrent_id"],
-    #     current_peer_id=peer_id,
-    #     thread_event=thread_killer,
-    # )
+    thread_client = create_client_thread(
+        peer_list_queue=tracker_queue,
+        torrent_id=json_data["torrent_id"],
+        current_peer_id=peer_id,
+        thread_event=thread_killer,
+    )
 
     # Keeps main thread alive until a keyboard interrupts is detected
     try:

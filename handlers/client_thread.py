@@ -1,6 +1,7 @@
 import threading
 import socket
-import queue
+
+from utils.message import Message, MessageType
 
 # Creates client thread
 def create_client_thread(peer_list_queue, torrent_id, current_peer_id, thread_event):
@@ -33,7 +34,18 @@ def download_task(peer_address, peer_id, torrent_id, thread_event):
 
     # Creates connection to peer
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = client_socket.connect((peer_ip, int(peer_port)))
-    print(result)
+    client_socket.connect((peer_ip, int(peer_port)))
+
+    # Sends hello request
+    hello_request = Message(type_= MessageType.HELLO_REQUEST, data=format_torrent_id(torrent_id=torrent_id)).to_bytes()
+    client_socket.sendall(hello_request)
+
+    # Waits until hello response is received
+    hello_response = Message.from_socket(socket=client_socket)
+    print(hello_response)
+
+def format_torrent_id(torrent_id):
+    return int(torrent_id, base=16).to_bytes(20, byteorder="big")
+    
 
 
