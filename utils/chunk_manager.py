@@ -18,7 +18,6 @@ class ChunkManager:
 
         # Creates a dictionary entry for each piece
         piece_status_dictionary = {}
-        chunk_dicitionary = {}
 
         # Loops through each piece and adds it to a list
         index = 0
@@ -32,7 +31,6 @@ class ChunkManager:
             piece_status_dictionary[value] = ChunkStatus.AVAILABLE
 
         self.piece_status_dictionary = piece_status_dictionary
-        self.chunk_dicitionary = chunk_dicitionary
 
     def check_current_chunks(self):
 

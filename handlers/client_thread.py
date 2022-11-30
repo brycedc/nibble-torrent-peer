@@ -96,6 +96,8 @@ def download_task(peer_address, peer_id, chunk_manager: ChunkManager, thread_eve
                 chunk_manager.piece_status_dictionary[key] = ChunkStatus.DOWNLOADING
                 requested_piece_hash = key
                 break
+        else:
+            index += 1
         
     # Creates piece request and sends it to peer
     piece_request = Message(type_=MessageType.PIECE_REQUEST, data=payload).to_bytes()
