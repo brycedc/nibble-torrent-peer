@@ -1,5 +1,6 @@
 from enum import Enum
 import os
+import logging
 
 
 class ChunkStatus(Enum):
@@ -9,12 +10,19 @@ class ChunkStatus(Enum):
 
 
 class ChunkManager:
-    def __init__(self, torrent_id, file_size, file_name, piece_size, pieces):
+    def __init__(self, torrent_id, file_size, file_name, piece_size, pieces, folder):
         self.torrent_id = torrent_id
         self.file_size = file_size
         self.file_name = file_name
         self.piece_size = piece_size
         self.number_of_pieces = len(pieces)
+        self.folder = folder
+
+        # Creates directory if it doesn't exist
+        try:
+            os.mkdir(folder)
+        except OSError as error:
+            logging.debug("Directory already exist will ignore error :)")
 
         # Creates a dictionary entry for each piece
         piece_status_dictionary = {}
@@ -25,12 +33,21 @@ class ChunkManager:
             piece_status_dictionary[piece] = ChunkStatus.MISSING
 
         # Loops through already existing chunks and updates the dictionary
-        chunk_files = os.listdir(f"chunks/{file_name}")
+        chunk_files = os.listdir(folder)
         for cfile in chunk_files:
-            chunk, value = cfile.split("_")
-            piece_status_dictionary[value] = ChunkStatus.AVAILABLE
+            piece_status_dictionary[cfile] = ChunkStatus.AVAILABLE
 
         self.piece_status_dictionary = piece_status_dictionary
+    
+
+    def is_done(self):
+        is_done = True
+        for key in self.piece_status_dictionary:
+            if(self.piece_status_dictionary[key] != ChunkStatus.AVAILABLE):
+                is_done = False
+                break
+        return is_done
+            
 
     def check_current_chunks(self):
 
