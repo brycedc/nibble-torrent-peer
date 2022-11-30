@@ -98,12 +98,12 @@ def main():
     )
     # Creates server thread to upload chunks to clients
     thread_server = create_server_thread(
-        args.port, chunk_manager, thread_killer
+        chunk_manager=chunk_manager, server_port=args.port, thread_event=thread_killer
     )
     # Creates client thread to download chunks to file
     thread_client = create_client_thread(
         peer_list_queue=tracker_queue,
-        torrent_id=json_data["torrent_id"],
+        chunk_manager=chunk_manager,
         current_peer_id=peer_id,
         thread_event=thread_killer,
     )
@@ -121,7 +121,7 @@ def main():
         # Waits for threads to end gracefully
         tracker_thread.join()
         thread_server.join()
-        # thread_client.join()
+        thread_client.join()
 
         sys.stderr.write("Peer closed successfully!\n")
 

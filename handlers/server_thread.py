@@ -11,6 +11,7 @@ def create_server_thread(server_port, chunk_manager, thread_event):
     server_thread = threading.Thread(
         target=server_task, args=(server_port, chunk_manager, thread_event)
     )
+    server_thread.setName("Server Thread")
     server_thread.start()
     return server_thread
 
@@ -36,6 +37,7 @@ def server_task(server_port, chunk_manager, thread_event):
             upload_peer = threading.Thread(
                 target=upload_task, args=(conn, addr, chunk_manager, thread_event)
             )
+            upload_peer.setName(f"Upload Peer:{addr[0]}")
             upload_peer.start()
         except socket.timeout:
             if thread_event.is_set():
@@ -97,7 +99,7 @@ def upload_task(conn, addr, chunk_manager, thread_event):
     # Request is valid send a hello response with available chunks
     logging.info(f" UPLOAD_THREAD({addr[0]}:{addr[1]}): Received successful hello request from peer")
     logging.info(f" UPLOAD_THREAD({addr[0]}:{addr[1]}): Sending hello response to peer")
-    payload = chunk_manager.check_current_chunks().encode()
+    payload = chunk_manager.check_current_chunks()
     hello_response = Message(type_=MessageType.HELLO_RESPONSE, data=payload).to_bytes()
     conn.sendall(hello_response)
 

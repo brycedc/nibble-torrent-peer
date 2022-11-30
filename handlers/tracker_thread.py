@@ -21,6 +21,7 @@ def create_tracker_thread(
             thread_event,
         ),
     )
+    tracker_thread.setName("Tracker Thread")
     tracker_thread.start()
     return tracker_thread
 
