@@ -36,7 +36,8 @@ class ChunkManager:
         chunk_files = os.listdir(folder)
         for cfile in chunk_files:
             name, value, _hash = cfile.split("_")
-            piece_status_dictionary[_hash] = ChunkStatus.AVAILABLE
+            if name == self.file_name:
+                piece_status_dictionary[_hash] = ChunkStatus.AVAILABLE
 
         self.piece_status_dictionary = piece_status_dictionary
     

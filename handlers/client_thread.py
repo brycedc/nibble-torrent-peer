@@ -35,11 +35,16 @@ def client_task(
             chunk_hashes = list(chunk_manager.piece_status_dictionary.keys())
             with open(f"{chunk_manager.file_name}", "ab") as torrent_file:
                 for index in range(chunk_manager.number_of_pieces):
-                    with open(f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{chunk_hashes[index]}", "rb") as chunk:
+                    with open(
+                        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{chunk_hashes[index]}",
+                        "rb",
+                    ) as chunk:
                         torrent_file.write(chunk.read())
             logging.info(" CLIENT_THREAD: Finished file")
             logging.info(" CLIENT_THREAD: Closing client thread...")
-            sys.stderr.write(f"Succesfully downloaded {chunk_manager.file_name}...continuing to seed torrent\n")
+            sys.stderr.write(
+                f"Succesfully downloaded {chunk_manager.file_name}...continuing to seed torrent\n"
+            )
             return
 
         try:
@@ -74,7 +79,11 @@ def download_task(peer_address, peer_id, chunk_manager: ChunkManager, thread_eve
 
     # Creates connection to peer
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((peer_ip, int(peer_port)))
+    try:
+        client_socket.connect((peer_ip, int(peer_port)))
+    except:
+        logging.info(f" DOWNLOAD_THREAD({peer_id}): Failed to connect to peer")
+        return
 
     # Sends hello request
     hello_request = Message(
@@ -192,7 +201,9 @@ def _verify_hash(data, expected_hash):
         return False
 
 
-def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, client_socket):
+def _download_chunks(
+    chunk_manager: ChunkManager, avalible_chunks, peer_id, client_socket
+):
     # Loops through the status map and checks for a match
     index = 0
     requested_piece_hash = b""
@@ -206,8 +217,12 @@ def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, clie
                 logging.info(
                     f" DOWNLOAD_THREAD({peer_id}): Downloading chunk {index + 1}"
                 )
-                num_of_bytes_needed = (chunk_manager.number_of_pieces.bit_length() + 7) // 8
-                payload = int.to_bytes(index, byteorder="big", length=num_of_bytes_needed)
+                num_of_bytes_needed = (
+                    chunk_manager.number_of_pieces.bit_length() + 7
+                ) // 8
+                payload = int.to_bytes(
+                    index, byteorder="big", length=num_of_bytes_needed
+                )
                 chunk_manager.piece_status_dictionary[key] = ChunkStatus.DOWNLOADING
                 requested_piece_hash = key
                 is_finshed = False
@@ -228,14 +243,22 @@ def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, clie
     piece_response = Message.from_socket(client_socket)
 
     # Checks that the piece is valid
-    if (_check_piece_response(piece_response, client_socket, peer_id, requested_piece_hash) is False):
+    if (
+        _check_piece_response(
+            piece_response, client_socket, peer_id, requested_piece_hash
+        )
+        is False
+    ):
         is_finshed = True
-        chunk_manager.piece_status_dictionary[requested_piece_hash] = ChunkStatus.MISSING
+        chunk_manager.piece_status_dictionary[
+            requested_piece_hash
+        ] = ChunkStatus.MISSING
         return is_finshed
 
     # Saves piece to chunk file and stores file id in dicitionary
     with open(
-        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{requested_piece_hash}", "wb"
+        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{requested_piece_hash}",
+        "wb",
     ) as chunk_file:
         chunk_file.write(piece_response.data)
         chunk_manager.piece_status_dictionary[
