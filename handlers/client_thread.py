@@ -26,8 +26,6 @@ def client_task(
     peer_list_queue, chunk_manager: ChunkManager, current_peer_id, thread_event
 ):
 
-    # Allows up to 5 peers to connect
-    connected_peer_map = {}
     while 1:
 
         # Checks if all blocks are collected
@@ -96,7 +94,8 @@ def download_task(peer_address, peer_id, chunk_manager: ChunkManager, thread_eve
     avalible_chunks = bin(int.from_bytes(hello_response.data, byteorder="big"))[2:]
     logging.info(f' DOWNLOAD_THREAD({peer_id}): Chunks avalible "{avalible_chunks}"')
 
-    while 1:
+    # Loops until thread event is triggerd or is finshed
+    while not thread_event.is_set():
         if (
             isFinshed := _download_chunks(
                 chunk_manager, avalible_chunks, peer_id, client_socket
@@ -207,8 +206,8 @@ def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, clie
                 logging.info(
                     f" DOWNLOAD_THREAD({peer_id}): Downloading chunk {index + 1}"
                 )
-                padding = -(-chunk_manager.number_of_pieces // 8)
-                payload = int.to_bytes(index, byteorder="big", length=padding)
+                bytes_needed = -(-chunk_manager.number_of_pieces // 256)
+                payload = int.to_bytes(index, byteorder="big", length=bytes_needed)
                 chunk_manager.piece_status_dictionary[key] = ChunkStatus.DOWNLOADING
                 requested_piece_hash = key
                 is_finshed = False
