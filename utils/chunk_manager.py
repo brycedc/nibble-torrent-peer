@@ -20,7 +20,7 @@ class ChunkManager:
 
         # Creates directory if it doesn't exist
         try:
-            os.mkdir(folder)
+            os.makedirs(f"{folder}/chunks")
         except OSError as error:
             logging.debug("Directory already exist will ignore error :)")
 
@@ -33,7 +33,7 @@ class ChunkManager:
             piece_status_dictionary[piece] = ChunkStatus.MISSING
 
         # Loops through already existing chunks and updates the dictionary
-        chunk_files = os.listdir(folder)
+        chunk_files = os.listdir(f"{folder}/chunks")
         for cfile in chunk_files:
             name, value, _hash = cfile.split("_")
             if name == self.file_name:

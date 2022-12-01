@@ -25,7 +25,7 @@ def main():
     parser.add_argument(
         "-p", "--port", type=int, default=8088, help="set the server port number"
     )
-    parser.add_argument("-d", "--dest", type=str, default="chunks", help="the folder to download to and seed from.")
+    parser.add_argument("-d", "--dest", type=str, default="result", help="the folder to download to and seed from.")
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="display log messages"
     )

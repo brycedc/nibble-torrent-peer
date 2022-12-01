@@ -33,10 +33,10 @@ def client_task(
             logging.info(" CLIENT_THREAD: All chunks are downloaded")
             logging.info(" CLIENT_THREAD: Creating file...")
             chunk_hashes = list(chunk_manager.piece_status_dictionary.keys())
-            with open(f"{chunk_manager.file_name}", "ab") as torrent_file:
+            with open(f"{chunk_manager.folder}/{chunk_manager.file_name}", "ab") as torrent_file:
                 for index in range(chunk_manager.number_of_pieces):
                     with open(
-                        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{chunk_hashes[index]}",
+                        f"{chunk_manager.folder}/chunks/{chunk_manager.file_name}_{index}_{chunk_hashes[index]}",
                         "rb",
                     ) as chunk:
                         torrent_file.write(chunk.read())
@@ -257,7 +257,7 @@ def _download_chunks(
 
     # Saves piece to chunk file and stores file id in dicitionary
     with open(
-        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{requested_piece_hash}",
+        f"{chunk_manager.folder}/chunks/{chunk_manager.file_name}_{index}_{requested_piece_hash}",
         "wb",
     ) as chunk_file:
         chunk_file.write(piece_response.data)

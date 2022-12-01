@@ -182,7 +182,7 @@ def _handle_piece_request(piece_request: Message, chunk_manager: ChunkManager, c
     
     #Creates a request 
     payload = b''
-    with open(f"{chunk_manager.folder}/{chunk_manager.file_name}_{request}_{requested_hash}", "rb") as chunk_file:
+    with open(f"{chunk_manager.folder}/chunks/{chunk_manager.file_name}_{request}_{requested_hash}", "rb") as chunk_file:
         payload = chunk_file.read()
     piece_response = Message(type_= MessageType.PIECE_RESPONSE, data=payload).to_bytes()
     logging.info(f" UPLOAD_THREAD({addr[0]}:{addr[1]}): Sending {chunk_manager.file_name}_{request}...")
