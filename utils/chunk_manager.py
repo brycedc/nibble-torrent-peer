@@ -75,4 +75,4 @@ class ChunkManager:
             # Appends remaning results to bytearray
             _bytearray.append(sum(v << i for i, v in enumerate(result[::-1])))
 
-        return _bytearray
+        return bytes(_bytearray)

@@ -98,16 +98,16 @@ def main():
         thread_event=thread_killer,
     )
     # # Creates server thread to upload chunks to clients
-    # thread_server = create_server_thread(
-    #     chunk_manager=chunk_manager, server_port=args.port, thread_event=thread_killer
-    # )
-    # Creates client thread to download chunks to file
-    thread_client = create_client_thread(
-        peer_list_queue=tracker_queue,
-        chunk_manager=chunk_manager,
-        current_peer_id=peer_id,
-        thread_event=thread_killer,
+    thread_server = create_server_thread(
+        chunk_manager=chunk_manager, server_port=args.port, thread_event=thread_killer
     )
+    # Creates client thread to download chunks to file
+    # thread_client = create_client_thread(
+    #     peer_list_queue=tracker_queue,
+    #     chunk_manager=chunk_manager,
+    #     current_peer_id=peer_id,
+    #     thread_event=thread_killer,
+    # )
 
     # Keeps main thread alive until a keyboard interrupts is detected
     try:
@@ -122,7 +122,7 @@ def main():
         # Waits for threads to end gracefully
         tracker_thread.join()
         # thread_server.join()
-        thread_client.join()
+        # thread_client.join()
 
         sys.stderr.write("Peer closed successfully!\n")
 

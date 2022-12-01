@@ -64,6 +64,8 @@ def upload_task(conn, addr, chunk_manager: ChunkManager, thread_event):
     hello_response = Message(type_=MessageType.HELLO_RESPONSE, data=payload).to_bytes()
     conn.sendall(hello_response)
 
+    
+
 def _check_hello_request(hello_request, addr, conn, torrent_id):
     if hello_request is None:
         logging.info(
