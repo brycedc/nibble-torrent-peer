@@ -206,8 +206,8 @@ def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, clie
                 logging.info(
                     f" DOWNLOAD_THREAD({peer_id}): Downloading chunk {index + 1}"
                 )
-                bytes_needed = -(-chunk_manager.number_of_pieces // 256)
-                payload = int.to_bytes(index, byteorder="big", length=bytes_needed)
+                num_of_bytes_needed = (chunk_manager.number_of_pieces.bit_length() + 7) // 8
+                payload = int.to_bytes(index, byteorder="big", length=num_of_bytes_needed)
                 chunk_manager.piece_status_dictionary[key] = ChunkStatus.DOWNLOADING
                 requested_piece_hash = key
                 is_finshed = False
