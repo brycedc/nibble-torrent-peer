@@ -69,7 +69,7 @@ class ChunkManager:
                 result.clear()
 
         # Pads the array if not empty
-        if remain := result.__len__() != 0:
+        if (remain := result.__len__()) != 0:
             for i in range(8 - remain):
                 result.append(False)
             # Appends remaning results to bytearray

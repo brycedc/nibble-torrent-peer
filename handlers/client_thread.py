@@ -193,7 +193,7 @@ def _verify_hash(data, expected_hash):
         return False
 
 
-def _download_chunks(chunk_manager: Message, avalible_chunks, peer_id, client_socket):
+def _download_chunks(chunk_manager: ChunkManager, avalible_chunks, peer_id, client_socket):
     # Loops through the status map and checks for a match
     index = 0
     requested_piece_hash = b""
@@ -216,7 +216,9 @@ def _download_chunks(chunk_manager: Message, avalible_chunks, peer_id, client_so
         else:
             index += 1
 
-    # TODO Checks if index reached the end of loop and break
+    # Checks if index reached the end of loop and is still set to finsihed
+    if (index == chunk_manager.number_of_pieces) and (is_finshed == True):
+        return is_finshed
 
     # Creates piece request and sends it to peer
     piece_request = Message(type_=MessageType.PIECE_REQUEST, data=payload).to_bytes()
@@ -227,13 +229,9 @@ def _download_chunks(chunk_manager: Message, avalible_chunks, peer_id, client_so
     piece_response = Message.from_socket(client_socket)
 
     # Checks that the piece is valid
-    if (
-        _check_piece_response(
-            piece_response, client_socket, peer_id, requested_piece_hash
-        )
-        is False
-    ):
+    if (_check_piece_response(piece_response, client_socket, peer_id, requested_piece_hash) is False):
         is_finshed = True
+        chunk_manager.piece_status_dictionary[requested_piece_hash] = ChunkStatus.MISSING
         return is_finshed
 
     # Saves piece to chunk file and stores file id in dicitionary
