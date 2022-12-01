@@ -3,7 +3,7 @@ import socket
 import logging
 import queue
 import hashlib
-import os
+import sys
 
 # Utility scripts
 from utils.message import Message, MessageType
@@ -21,7 +21,7 @@ def create_client_thread(peer_list_queue, chunk_manager, current_peer_id, thread
     return client_thread
 
 
-# Client task to control connection to 5 peers
+# Client task to control connection to at least 5 peers
 def client_task(
     peer_list_queue, chunk_manager: ChunkManager, current_peer_id, thread_event
 ):
@@ -34,13 +34,14 @@ def client_task(
         if chunk_manager.is_done() is True:
             logging.info(" CLIENT_THREAD: All chunks are downloaded")
             logging.info(" CLIENT_THREAD: Creating file...")
-            chunk_files = os.listdir(chunk_manager.folder)
+            chunk_hashes = list(chunk_manager.piece_status_dictionary.keys())
             with open(f"{chunk_manager.file_name}", "ab") as torrent_file:
-                for cfile in chunk_files:
-                    with open(f"{chunk_manager.folder}/{cfile}", "rb") as chunk:
+                for index in range(chunk_manager.number_of_pieces):
+                    with open(f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{chunk_hashes[index]}", "rb") as chunk:
                         torrent_file.write(chunk.read())
             logging.info(" CLIENT_THREAD: Finished file")
             logging.info(" CLIENT_THREAD: Closing client thread...")
+            sys.stderr.write(f"Succesfully downloaded {chunk_manager.file_name}...continuing to seed torrent\n")
             return
 
         try:
@@ -237,7 +238,7 @@ def _download_chunks(chunk_manager: Message, avalible_chunks, peer_id, client_so
 
     # Saves piece to chunk file and stores file id in dicitionary
     with open(
-        f"{chunk_manager.folder}/{requested_piece_hash}", "wb"
+        f"{chunk_manager.folder}/{chunk_manager.file_name}_{index}_{requested_piece_hash}", "wb"
     ) as chunk_file:
         chunk_file.write(piece_response.data)
         chunk_manager.piece_status_dictionary[

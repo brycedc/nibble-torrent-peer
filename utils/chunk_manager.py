@@ -35,7 +35,8 @@ class ChunkManager:
         # Loops through already existing chunks and updates the dictionary
         chunk_files = os.listdir(folder)
         for cfile in chunk_files:
-            piece_status_dictionary[cfile] = ChunkStatus.AVAILABLE
+            name, value, _hash = cfile.split("_")
+            piece_status_dictionary[_hash] = ChunkStatus.AVAILABLE
 
         self.piece_status_dictionary = piece_status_dictionary
     
