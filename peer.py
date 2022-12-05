@@ -49,7 +49,7 @@ def main():
         sys.exit(1)
 
     # Checks if torrent file exist
-    if not os.path.exists(f"torrents/{args.torrent_file}"):
+    if not os.path.exists(args.torrent_file):
         sys.stderr.write(
             f'"{args.torrent_file}" does not exist try a valid torrent file\n'
         )
@@ -66,7 +66,7 @@ def main():
     logging.info(f"\tTorrent File: {args.torrent_file}\n")
 
     # Opens the json file and loads it into a dictionary
-    with open(f"torrents/{args.torrent_file}", "r") as torrent:
+    with open(args.torrent_file, "r") as torrent:
         json_data = json.load(torrent)
 
     # Creates a response queue from the tracker
